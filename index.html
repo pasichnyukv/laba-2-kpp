@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Weather Map</title>
+        <style type="text/css">
+        html, body, #demoMap {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+	</style>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+		let map;
+        const weatherAPI = "1deaf9c0e2ce57fbfba2a83dd68909ca"
+
+		function handleAPI( data ){
+			console.log( data )
+            var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+            var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+			var position = new OpenLayers.LonLat(data.coord.lon, data.coord.lat).transform(fromProjection, toProjection);
+
+            var size = new OpenLayers.Size(52, 52);
+			var addres = 'http://openweathermap.org/img/w/' + data.weather[0].icon + '.png';
+			var icon = new OpenLayers.Icon(addres, size);
+            var markers = new OpenLayers.Layer.Markers("Markers");
+			map.addLayer(markers);
+			markers.addMarker(new OpenLayers.Marker(position, icon));
+		}
+
+		function initMap() {
+            map = new OpenLayers.Map("demoMap");
+            var mapnik = new OpenLayers.Layer.OSM();
+            var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+            var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+			var position = new OpenLayers.LonLat(30.5238, 50.4547).transform(fromProjection, toProjection);
+			var zoom = 7;
+
+            map.addLayer(mapnik);
+            map.setCenter(position, zoom);
+
+			["Vinnytsia", "Cherkasy", "Chernivtsi", "Dnipropetrovsk", "Donetsk", "Ivano-Frankivsk", "Kharkiv", "Kherson", "Khmelnytskyi", "Kirovohrad", "Luhansk", "Mykolaiv", "Poltava", "Rivne", "Sumy", "Ternopil", "Lutsk", "Uzhhorod", "Zaporizhia", "Zhytomyr"].forEach(city => {
+				$.get( `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPI}`, handleAPI )
+			});
+
+			[
+				{ lat: 46.96591, lng: 31.99740, },
+                { lat: 46.47747, lng: 30.73262, },
+				{ lat: 44.95719, lng: 34.11079, },
+                { lat: 47.09514, lng: 37.54131, },
+                { lat: 50.45466, lng: 30.52380, },
+				{ lat: 51.50551, lng: 31.28487, },
+                { lat: 47.90966, lng: 33.38044, },
+			].forEach(coord => {
+				$.get( `https://api.openweathermap.org/data/2.5/weather?lat=${coord.lat}&lon=${coord.lng}&appid=${weatherAPI}`, handleAPI )
+			});
+		}
+	</script>
+</head>
+
+<body onload="initMap();">
+    <div id="demoMap"></div>
+    <script src="OpenLayers.js"></script>
+</body>
+
+</html>
